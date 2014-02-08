@@ -24,19 +24,20 @@ def process_file(filename, output_file=None, output_dir=".", processor=None):
     print("   * Parsing...")
     tree = processor[0](text)
     
-    if output is None:
-        output, ext = os.path.splitext(filename)
-        output = output + ".textile"
+    if output_file is None:
+        output_file, ext = os.path.splitext(filename)
+        output_file = output_file + ".textile"
         
-    output_file = output
+    output = output_file
     if output_dir is not None:
-        output_file = os.path.join(output_dir, output_file)
+        output_file = os.path.basename(output_file)
+        output = os.path.join(output_dir, output_file)
         
-    print("   * Writing {0}...".format(output))
+    print("   * Writing {0}...".format(output_file))
     if len(processor) == 3:
-        embroider.output.output_to_file(tree, output_file,  **processor[2])
+        embroider.output.output_to_file(tree, output,  **processor[2])
     else:
-        embroider.output.output_to_file(tree, output_file)
+        embroider.output.output_to_file(tree, output)
     
     print("   * Done")
 

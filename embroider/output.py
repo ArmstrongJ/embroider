@@ -8,7 +8,7 @@ def output_general(element, heading, member, dest, level):
     
     output_heading(heading, dest, level)
     
-    if element[member] is None:
+    if element.get(member) is None:
         dest.write("Not available\n\n")
     else:
         dest.write(element[member])
@@ -20,11 +20,11 @@ def output_description(element, dest, level):
     
 def output_notes(element, dest, level):
     """Outputs notes, if available"""
-    if element['notes'] is not None:
+    if element.get('notes') is not None:
         output_general(element, "Notes", "notes", dest, level)
 
 def output_arguments(element, dest, level):
-    if element['arguments'] is None:
+    if element.get('arguments') is None:
         return
         
     output_heading("Arguments", dest, level)
@@ -40,15 +40,15 @@ def output_arguments(element, dest, level):
     dest.write("\n")
     
 def output_return(element, dest, level):
-    if element['return'] is None:
+    if element.get('return') is None:
         return
     
     output_heading("Return", dest, level)
     
-    if element['return']['type'] is not None:
+    if element['return'].get('type') is not None:
         dest.write('**{0}**\n\n'.format(element['return']['type']))
     
-    if element['return']['description'] is None:
+    if element['return'].get('description') is None:
         dest.write("Not available\n\n")
     else:
         dest.write(element['return']['description'])
@@ -57,7 +57,7 @@ def output_return(element, dest, level):
 def output_procedure(element, dest, level):
     output_heading(element['name'], dest, level)
     
-    if element['declaration'] is not None:
+    if element.get('declaration') is not None:
         dest.write("**{0}**\n\n".format(element['declaration']))
         
     output_description(element, dest, level+1)
@@ -68,11 +68,11 @@ def output_procedure(element, dest, level):
 def output_constants(elements, dest):
     dest.write("|Id|Type|Value|Description|\n")
     for x in elements:
-        if x["type"] is None:
+        if x.get("type") is None:
             x["type"] = " "
-        if x["description"] is None:
+        if x.get("description") is None:
             x["description"] = " "
-        if x["value"] is None:
+        if x.get("value") is None:
             x["value"] = " "
             
         dest.write("|{name}|{type}|{value}|{description}|\n".format(**x))
@@ -83,15 +83,15 @@ def output_struct_components(components, dest, indent):
         dest.write("".join(["*" for i in range(0, indent)]))
         dest.write(" {0}".format(x['name']))
         
-        if x['type'] is not None:
+        if x.get('type') is not None:
             dest.write(" - **{0}**".format(x['type']))
             
-        if x['description'] is not None:
+        if x.get('description') is not None:
             dest.write(" - {0}".format(x['description']))
         
         dest.write("\n")
         
-        if x['children'] is not None:
+        if x.get('children') is not None:
             output_struct_components(x['children'], dest, indent+1)
         
     dest.write("\n")
@@ -99,7 +99,7 @@ def output_struct_components(components, dest, indent):
 def output_struct(element, dest, level):
     output_heading(element['name'], dest, level)
     
-    if element['description']:
+    if element.get('description'):
         dest.write("{0}\n\n".format(element['description']))
     
     output_struct_components(element['children'], dest, 1)
@@ -110,19 +110,25 @@ def output_container(element, dest, level,
                      proc_name="Procedures"):
                      
     heading = element['name']
-    if element['type'] is not None:
+    if element.get("type") is not None:
         heading = heading + " " + element["type"]
     
-    if element['constants'] is not None:
+    output_heading(heading, dest, level)
+    
+    if element.get("containers") is not None:
+        for x in element['containers']:
+            output_container(x)
+    
+    if element.get("constants") is not None:
         output_heading(constant_name, dest, level+1)
         output_constants(element['constants'])
     
-    if element['structs'] is not None:
+    if element.get("structs") is not None:
         output_heading(struct_name, dest, level+1)
         for x in element['structs']:
             output_struct(x, dest, level+2)
-    
-    if element['procedures'] is not None:
+
+    if element.get("procedures") is not None:
         output_heading(proc_name, dest, level+1)
         for x in element['procedures']:
             output_procedure(x, dest, level+2)
@@ -140,7 +146,7 @@ def output_to_file(container, filename,
                                  struct_name=struct_name,
                                  proc_name=proc_name)
         else:
-            output_container(c, dest, 1, 
+            output_container(container, dest, 1, 
                              constant_name=constant_name,
                              struct_name=struct_name,
                              proc_name=proc_name)
