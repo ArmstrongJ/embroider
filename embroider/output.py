@@ -24,7 +24,7 @@ def output_notes(element, dest, level):
         output_general(element, "Notes", "notes", dest, level)
 
 def output_arguments(element, dest, level):
-    if element.get('arguments') is None:
+    if element.get('arguments') is None or len(element.get('arguments')) == 0:
         return
         
     output_heading("Arguments", dest, level)
@@ -121,7 +121,7 @@ def output_container(element, dest, level,
     
     if element.get("constants") is not None:
         output_heading(constant_name, dest, level+1)
-        output_constants(element['constants'])
+        output_constants(element['constants'], dest)
     
     if element.get("structs") is not None:
         output_heading(struct_name, dest, level+1)
