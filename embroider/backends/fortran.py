@@ -99,25 +99,30 @@ def check_variable_declarations(line):
     p_repl_opt = re.compile("(?i)(,\\s*optional)")
     vtype = re.sub(p_repl_opt, "", vtype).strip()
     
-    p_desc = re.compile("(?P<desc>!.*)$")
-    m_desc = re.match(p_desc, vtype)
-    if m_desc is None:
+    cindex = line.find("!")
+    if cindex < 0:
         description = None
     else:
-        description = m_desc.group('desc')[1:].strip()
-        vtype = re.sub(p_desc, "", vtype)
-    
+        description = line[cindex+1:].strip()
+        
     # Should have all necessary type information, so now pull the names
     names_i = line.find("::")
-    varnames = line[names_i+2:]
-    variables = varnames.split(",")
+    varnames = line[names_i+2:cindex]
+    var_raw = varnames.split(",")
     
-    p_cleanname = re.compile("(?i)^(?P<name>\\w[\\w\\d_]*)[\\s,=]*")
-    variables = [re.match(p_cleanname, v.strip()).group("name") for v in variables if re.match(p_cleanname, v.strip())  is not None]
-    
-    return [{'name':v, 'type':vtype, 'parameter':parameter, 
-             'description':description, 'optional':optional} 
-                for v in variables]
+    p_cleanname = re.compile("(?i)^(?P<name>\\w[\\w\\d_]*)\\s*(?P<value>=\\s*[^,]*)?[\\s,]*")
+    variables = []
+    for v in var_raw:
+        m = re.match(p_cleanname, v.strip())
+        if m is not None:
+            value = m.group('value')
+            if value is not None:
+                value = value[1:].strip()
+            variable = {'name':m.group('name'), 'type':vtype, 'parameter':parameter, 
+                        'description':description, 'optional':optional, 'value':value}
+            variables.append(variable)
+
+    return variables
 
 def check_return_value(e):
     """Processes function elements to determine the name of the return value"""
