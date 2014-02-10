@@ -7,15 +7,17 @@ headings = {'proc_name':  "Procedures",
             'struct_name': "Derived Types",
             'constant_name': "Parameters"}
 
-patterns = { 'module': re.compile("(?i)^\\s*module\s+(?P<name>\\w[\\w_\\d]*)"),
+patterns = { 'module': re.compile("(?i)^\\s*module\\s+(?P<name>\\w[\\w_\\d]*)"),
              'subroutine': re.compile("(?i)^\\s*(?:pure\\s+)?(?:recursive\\s+)?subroutine\\s+(?P<name>[\\w_\\d]+)\\s*\\(?"),
              'function': re.compile("(?i)^\\s*(?:pure\\s+)?(?:recursive\\s+)?function\\s+(?P<name>[\\w_\\d]+)\\s*\\(?"),
-             'interface': re.compile("(?i)^\\s*interface\s+(?P<name>\\w[\\w_\\d]*)"),
+             'interface': re.compile("(?i)^\\s*interface\\s+(?P<name>\\w[\\w_\\d]*)"),
+             'type': re.compile("(?i)^\\s*type(?:,\\s*[^:]*)::\\s*(?P<name>\\w[\\w_\\d]*)\\s*$")
             }
 end_patterns = { 'module':re.compile("(?i)^\\s*end\\s+module"),
                  'subroutine': re.compile("(?i)^\\s*end\\s+subroutine"),
                  'function': re.compile("(?i)^\\s*end\\s+function"),
                  'interface': re.compile("(?i)^\\s*end\\s+interface"),
+                 'type': re.compile("(?i)^\\s*end\\s+type"),
                 }
                     
 debug = False
@@ -102,6 +104,7 @@ def check_variable_declarations(line):
     cindex = line.find("!")
     if cindex < 0:
         description = None
+        cindex = len(line)
     else:
         description = line[cindex+1:].strip()
         
@@ -169,7 +172,7 @@ def process(text):
                 check_return_value(current)
             
             if running_comment is not None:
-                current['description'] = running_commment.getvalue()
+                current['description'] = running_comment.getvalue()
             
             if debug:
                 print("{0} named '{1}' on line {2}".format(element['type'], element['name'], i))
